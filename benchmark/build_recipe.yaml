@@ -1,0 +1,5 @@
+modules:
+  - openmpi/5.0.9
+
+env:
+  OMPI_MCA_rmaps_base_oversubscribe: 1

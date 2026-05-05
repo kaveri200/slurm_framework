@@ -1,0 +1,236 @@
+#!/usr/bin/env python3
+
+import argparse
+import subprocess
+import os
+import sys
+
+VERSION = "3.1-wsl"
+
+BASE_DIR = os.path.dirname(os.path.realpath(__file__))
+
+PREPROCESS_DIR = os.path.join(BASE_DIR, "preprocessing")
+MODULE_DIR     = os.path.join(BASE_DIR, "modules")
+CLEANUP_DIR    = os.path.join(BASE_DIR, "cleanup")
+
+
+# -------------------------------------------------
+# Utility
+# -------------------------------------------------
+
+def run_script(script_path, args=None):
+    if not os.path.exists(script_path):
+        print(f"[ERROR] Script not found: {script_path}")
+        sys.exit(1)
+
+    cmd = [sys.executable, script_path]
+    if args:
+        cmd += args
+
+    result = subprocess.run(cmd)
+    sys.exit(result.returncode)
+
+
+def require_root():
+    if os.geteuid() != 0:
+        print("[ERROR] This command must be run with sudo.")
+        sys.exit(1)
+
+
+# -------------------------------------------------
+# INSTALL
+# -------------------------------------------------
+
+def install_component(component, version=None):
+    require_root()
+
+    if component == "slurm":
+        print("[INFO] Running Slurm installer...\n")
+        run_script(os.path.join(PREPROCESS_DIR, "install_slurm.py"))
+
+    elif component == "gcc":
+        script = os.path.join(MODULE_DIR, "install_gcc.py")
+        run_script(script, [version] if version else [])
+
+    elif component == "python":
+        script = os.path.join(MODULE_DIR, "install_python.py")
+        run_script(script, [version] if version else [])
+
+    elif component == "openmpi":
+        script = os.path.join(MODULE_DIR, "install_openmpi.py")
+        run_script(script, [version] if version else [])
+
+    else:
+        print(f"[ERROR] Unknown component: '{component}'")
+        print("       Run 'slurmfw list' to see available components.")
+        sys.exit(1)
+
+
+# -------------------------------------------------
+# CLEANUP
+# -------------------------------------------------
+
+def cleanup_component(component, version=None):
+    require_root()
+
+    if component == "slurm":
+        run_script(os.path.join(PREPROCESS_DIR, "remove_slurm.py"))
+
+    elif component == "gcc":
+        script = os.path.join(CLEANUP_DIR, "remove_gcc.py")
+        run_script(script, [version] if version else [])
+
+    elif component == "python":
+        script = os.path.join(CLEANUP_DIR, "remove_python.py")
+        run_script(script, [version] if version else [])
+
+    elif component == "openmpi":
+        script = os.path.join(CLEANUP_DIR, "remove_openmpi.py")
+        run_script(script, [version] if version else [])
+
+    else:
+        print(f"[ERROR] Unknown component: '{component}'")
+        sys.exit(1)
+# -------------------------------------------------
+# REPAIR
+# -------------------------------------------------
+
+def repair_component(component):
+    require_root()
+
+    if component == "slurm":
+        run_script(os.path.join(PREPROCESS_DIR, "repair_slurm.py"))
+
+    else:
+        print(f"[ERROR] Unknown component: '{component}'")
+        sys.exit(1)
+
+
+# -------------------------------------------------
+# STATUS
+# -------------------------------------------------
+
+def status_component(component):
+    if component == "slurm":
+        run_script(os.path.join(PREPROCESS_DIR, "status_slurm.py"))
+    else:
+        print(f"[ERROR] Unknown component: '{component}'")
+        sys.exit(1)
+
+
+# -------------------------------------------------
+# HEALTH
+# -------------------------------------------------
+
+def health_component(component):
+    if component == "slurm":
+        run_script(os.path.join(PREPROCESS_DIR, "health.py"))
+    else:
+        print(f"[ERROR] Unknown component: '{component}'")
+        sys.exit(1)
+
+
+# -------------------------------------------------
+# LIST
+# -------------------------------------------------
+
+def list_components():
+    print("""
+╔══════════════════════════════════════════════╗
+║     SLURMFW WSL - Available Components       ║
+╚══════════════════════════════════════════════╝
+
+  Core:
+    slurm       Slurm (source build)
+
+  Modules:
+    gcc         GNU Compiler Collection
+    python      Python (source install)
+    openmp      OpenMP support
+
+  Commands:
+    install     Install a component
+    cleanup     Remove a component
+    repair      Repair a component
+    status      Show status
+    health      Check health
+
+  Usage:
+    sudo slurmfw install  <component> [version]
+
+  Examples:
+    sudo slurmfw install python
+    sudo slurmfw install python 3.12.2
+""")
+
+
+# -------------------------------------------------
+# CLI
+# -------------------------------------------------
+
+def main():
+
+    parser = argparse.ArgumentParser(
+        prog="slurmfw",
+        description=f"SLURMFW v{VERSION} - HPC Setup Framework",
+        formatter_class=argparse.RawTextHelpFormatter
+    )
+
+    parser.add_argument(
+        "--version", "-v",
+        action="version",
+        version=f"slurmfw {VERSION}"
+    )
+
+    subparsers = parser.add_subparsers(dest="command")
+
+    # INSTALL
+    p_install = subparsers.add_parser("install")
+    p_install.add_argument("component")
+    p_install.add_argument("version", nargs="?", default=None)
+
+    # CLEANUP
+    p_cleanup = subparsers.add_parser("cleanup")
+    p_cleanup.add_argument("component")
+    p_cleanup.add_argument("version", nargs="?", default=None)
+    # REPAIR
+    p_repair = subparsers.add_parser("repair")
+    p_repair.add_argument("component")
+
+    # STATUS
+    p_status = subparsers.add_parser("status")
+    p_status.add_argument("component")
+
+    # HEALTH
+    p_health = subparsers.add_parser("health")
+    p_health.add_argument("component")
+
+    # LIST
+    subparsers.add_parser("list")
+
+    args = parser.parse_args()
+
+    if args.command == "install":
+        install_component(args.component, args.version)
+
+    elif args.command == "cleanup":
+        cleanup_component(args.component, args.version)
+
+    elif args.command == "repair":
+        repair_component(args.component)   # ✅ FIXED
+
+    elif args.command == "status":
+        status_component(args.component)
+
+    elif args.command == "health":
+        health_component(args.component)
+
+    elif args.command == "list":
+        list_components()
+
+    else:
+        parser.print_help()
+
+
+if __name__ == "__main__":
+    main()

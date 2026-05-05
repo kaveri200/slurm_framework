@@ -1,0 +1,18 @@
+# Ignore large/build directories
+Python-3.13.0/
+gcc-16.1.0/
+openmpi-5.0.4/
+
+modules/Python-*/
+modules/gcc-*/
+modules/openmpi-*/
+# Optional: ignore compiled/build stuff
+*.o
+*.out
+*.log
+__pycache__/
+*.pyc
+
+# Ignore temporary files
+*.tmp
+*.swp

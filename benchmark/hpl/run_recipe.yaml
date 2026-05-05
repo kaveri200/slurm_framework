@@ -1,0 +1,13 @@
+job:
+  name: hpl_test
+  nodes: 1
+  ntasks: 3
+  cpus_per_task: 1
+  time: "00:10:00"
+
+user_inputs:
+  N: 2000
+  NB: 128
+  P: 1
+  Q: 3
+  iterations: 3

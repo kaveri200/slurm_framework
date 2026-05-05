@@ -1,0 +1,3 @@
+/home/kaveri/slurmfw/benchmark/stream/stream_src/build/CMakeFiles/stream.dir
+/home/kaveri/slurmfw/benchmark/stream/stream_src/build/CMakeFiles/edit_cache.dir
+/home/kaveri/slurmfw/benchmark/stream/stream_src/build/CMakeFiles/rebuild_cache.dir

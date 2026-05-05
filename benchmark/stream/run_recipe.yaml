@@ -1,0 +1,12 @@
+job:
+  name: stream_test
+  nodes: 1
+  ntasks: 1
+  cpus_per_task: 4
+  time: "00:10:00"
+
+user_inputs:
+  array_size: 20000000
+  ntimes: 10
+  threads: 4
+  iterations: 3

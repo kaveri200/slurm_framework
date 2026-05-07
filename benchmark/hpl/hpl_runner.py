@@ -202,7 +202,12 @@ def run():
         results = []
 
         for i in range(iterations):
-            out_file = os.path.join(run_dir, f"temp_{i}.out")
+            output_dir = os.environ.get("OUTPUT_DIR", run_dir)
+
+            out_file = os.path.join(
+                output_dir,
+                f"iteration_{i+1}.out"
+            )
 
             with open(out_file, "w") as f_out:
                 result = subprocess.run(

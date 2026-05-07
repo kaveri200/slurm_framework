@@ -16,3 +16,24 @@ __pycache__/
 # Ignore temporary files
 *.tmp
 *.swp
+# Ignore tar files
+*.tar.gz
+*.tar
+*.gz
+
+# Ignore benchmark outputs
+benchmark/hpl/hpl_outputs/
+benchmark/stream/stream_outputs/
+
+# Ignore extracted build folders if needed
+benchmark/hpl/hpl-2.3/
+benchmark_backup/
+# Python cache
+__pycache__/
+*.pyc
+
+# VS Code
+.vscode/
+
+# Logs
+*.log
